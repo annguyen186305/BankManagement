@@ -1,14 +1,15 @@
 package com.example.bankmanagement.service;
 
-import com.example.bankmanagement.dto.AccountRequest;
 import com.example.bankmanagement.dto.AccountResponse;
+import com.example.bankmanagement.dto.CardRequest;
+import com.example.bankmanagement.dto.CardResponse;
 
 import java.util.List;
 
-public interface AccountService {
-    AccountResponse createAccount(AccountRequest accountRequest);
-    AccountResponse updateAccount(Long accountId, AccountRequest accountRequest) throws Exception;
-    void deleteAccount(Long accountId);
-    AccountResponse getAccountById(Long accountId);
-    List<AccountResponse> getAllAccounts();
+public interface CardService {
+    CardResponse createCard(CardRequest cardRequest);
+    CardResponse updateCard(Long cardId, CardRequest cardRequest) throws Exception;
+    CardResponse getCardById(Long cardId);
+    void deleteCard(Long cardId) throws Exception;
+    List<CardResponse> getAllCards();
 }

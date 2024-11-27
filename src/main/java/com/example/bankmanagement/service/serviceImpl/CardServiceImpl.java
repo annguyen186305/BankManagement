@@ -1,89 +1,104 @@
 package com.example.bankmanagement.service.serviceImpl;
 
-import com.example.bankmanagement.dto.AccountRequest;
-import com.example.bankmanagement.dto.AccountResponse;
+import com.example.bankmanagement.Util.Constants;
+import com.example.bankmanagement.dto.CardRequest;
+import com.example.bankmanagement.dto.CardResponse;
 import com.example.bankmanagement.entity.Account;
+import com.example.bankmanagement.entity.Card;
 import com.example.bankmanagement.repositories.AccountRepository;
-import com.example.bankmanagement.service.AccountService;
+import com.example.bankmanagement.repositories.CardRepository;
+import com.example.bankmanagement.service.CardService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class AccountServiceImpl implements AccountService {
+public class CardServiceImpl implements CardService {
 
+    private final CardRepository cardRepository;
     private final AccountRepository accountRepository;
 
-    public AccountServiceImpl(AccountRepository accountRepository) {
+    public CardServiceImpl(CardRepository cardRepository, AccountRepository accountRepository) {
+        this.cardRepository = cardRepository;
         this.accountRepository = accountRepository;
     }
 
     @Override
-    public AccountResponse createAccount(AccountRequest accountRequest) {
-        Account account = new Account();
-        account.setCustomerName(accountRequest.getCustomerName());
-        account.setEmail(accountRequest.getEmail());
-        account.setPhoneNumber(accountRequest.getPhoneNumber());
+    public CardResponse createCard(CardRequest cardRequest) {
+        Account account = accountRepository.findById(cardRequest.getAccountId())
+                .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        Account savedAccount = accountRepository.save(account);
-        return mapToResponse(savedAccount);
+        Card card = new Card();
+        card.setAccountId(account);
+        card.setCardType(cardRequest.getCardType());
+
+        LocalDate now = LocalDate.now();
+        LocalDate expiry = now.plusYears(2);
+        Timestamp expiryDate = Timestamp.valueOf(expiry.atStartOfDay());
+        card.setExpiryDate(expiryDate);
+
+        card.setStatus(1);
+
+        Card savedCard = cardRepository.save(card);
+        return mapToResponse(savedCard);
     }
 
     @Override
-    public AccountResponse updateAccount(Long accountId, AccountRequest accountRequest) throws Exception {
-        Optional<Account> oldAccountOptional = accountRepository.findById(accountId);
-        if (oldAccountOptional.isPresent()) {
-            Account oldAccount = oldAccountOptional.get();
+    public CardResponse updateCard(Long cardId, CardRequest cardRequest) throws Exception {
+        Optional<Card> oldCardOptional = cardRepository.findById(cardId);
+        if (oldCardOptional.isPresent()) {
+            Card oldCard = oldCardOptional.get();
 
-            if (!StringUtils.isEmpty(accountRequest.getCustomerName())) {
-                oldAccount.setCustomerName(accountRequest.getCustomerName());
+            if (cardRequest.getCardType() != null) {
+                oldCard.setCardType(cardRequest.getCardType());
             }
 
-            if (!StringUtils.isEmpty(accountRequest.getEmail())) {
-                oldAccount.setEmail(accountRequest.getEmail());
-            }
-
-            if (!StringUtils.isEmpty(accountRequest.getPhoneNumber())) {
-                oldAccount.setPhoneNumber(accountRequest.getPhoneNumber());
-            }
-
-            Account updatedAccount = accountRepository.save(oldAccount);
-            return mapToResponse(updatedAccount);
+            Card updatedCard = cardRepository.save(oldCard);
+            return mapToResponse(updatedCard);
         } else {
-            throw new Exception("Account not found with id: " + accountId);
+            throw new Exception("Card not found with id: " + cardId);
         }
     }
 
     @Override
-    public void deleteAccount(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
-        accountRepository.delete(account);
+    public void deleteCard(Long cardId) throws Exception {
+        Optional<Card> cardOptional = cardRepository.findById(cardId);
+        if (cardOptional.isPresent()) {
+            Card card = cardOptional.get();
+            card.setStatus(Constants.INACTIVE);
+            cardRepository.save(card);
+
+        } else {
+            throw new Exception("Card not found with id: " + cardId);
+        }
     }
 
     @Override
-    public AccountResponse getAccountById(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
-        return mapToResponse(account);
+    public CardResponse getCardById(Long cardId) {
+        // Lấy thẻ theo cardId
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Card not found"));
+        return mapToResponse(card);
     }
 
     @Override
-    public List<AccountResponse> getAllAccounts() {
-        return accountRepository.findAll().stream()
+    public List<CardResponse> getAllCards() {
+        return cardRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    private AccountResponse mapToResponse(Account account) {
-        AccountResponse response = new AccountResponse();
-        response.setAccountId(account.getAccountId());
-        response.setCustomerName(account.getCustomerName());
-        response.setEmail(account.getEmail());
-        response.setPhoneNumber(account.getPhoneNumber());
+    private CardResponse mapToResponse(Card card) {
+        CardResponse response = new CardResponse();
+        response.setCardId(card.getCardId());
+        response.setCardType(card.getCardType());
+        response.setExpiryDate(card.getExpiryDate());
+        response.setStatus(card.getStatus());
+        response.setAccountId(card.getAccountId().getAccountId());
         return response;
     }
 }

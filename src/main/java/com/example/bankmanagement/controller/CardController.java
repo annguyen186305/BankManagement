@@ -1,8 +1,8 @@
 package com.example.bankmanagement.controller;
 
-import com.example.bankmanagement.dto.AccountRequest;
-import com.example.bankmanagement.dto.AccountResponse;
-import com.example.bankmanagement.service.AccountService;
+import com.example.bankmanagement.dto.CardRequest;
+import com.example.bankmanagement.dto.CardResponse;
+import com.example.bankmanagement.service.CardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,46 +12,46 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/accounts")
-public class AccountController {
+@RequestMapping("/api/cards")
+public class CardController {
 
     @Autowired
-    AccountService accountService;
+    private CardService cardService;
 
-    // 1. Create Account
+    // 1. Create Card
     @PostMapping("/add")
-    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody AccountRequest accountRequest) {
-        AccountResponse response = accountService.createAccount(accountRequest);
+    public ResponseEntity<CardResponse> createCard(@Valid @RequestBody CardRequest cardRequest) {
+        CardResponse response = cardService.createCard(cardRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 2. Update Account
-    @PutMapping("/{accountId}")
-    public ResponseEntity<AccountResponse> updateAccount(
-            @PathVariable Long accountId,
-            @Valid @RequestBody AccountRequest accountRequest) throws Exception {
-        AccountResponse response = accountService.updateAccount(accountId, accountRequest);
+    // 2. Update Card
+    @PutMapping("/{cardId}")
+    public ResponseEntity<CardResponse> updateCard(
+            @PathVariable Long cardId,
+            @Valid @RequestBody CardRequest cardRequest) throws Exception {
+        CardResponse response = cardService.updateCard(cardId, cardRequest);
         return ResponseEntity.ok(response);
     }
 
-    // 3. Delete Account
-    @DeleteMapping("/{accountId}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
-        accountService.deleteAccount(accountId);
-        return ResponseEntity.noContent().build();
+    // 3. Delete Card
+    @DeleteMapping("/{cardId}")
+    public ResponseEntity<Void> deleteCard(@PathVariable Long cardId) throws Exception {
+        cardService.deleteCard(cardId);
+        return ResponseEntity.ok().build();
     }
 
-    // 4. Get Account by ID
-    @GetMapping("/{accountId}")
-    public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long accountId) {
-        AccountResponse response = accountService.getAccountById(accountId);
+    // 4. Get Card by ID
+    @GetMapping("/{cardId}")
+    public ResponseEntity<CardResponse> getCardById(@PathVariable Long cardId) {
+        CardResponse response = cardService.getCardById(cardId);
         return ResponseEntity.ok(response);
     }
 
-    // 5. Get All Accounts
+    // 5. Get All Cards
     @GetMapping
-    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        List<AccountResponse> responseList = accountService.getAllAccounts();
+    public ResponseEntity<List<CardResponse>> getAllCards() {
+        List<CardResponse> responseList = cardService.getAllCards();
         return ResponseEntity.ok(responseList);
     }
 }
